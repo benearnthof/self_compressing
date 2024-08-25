@@ -6,6 +6,10 @@ Evaluation needs to incorporate both performance statistics & model size in bits
 from torchvision.datasets import MNIST
 import torchvision.transforms as T
 from torch.utils.data import DataLoader
+from torch.optim import Adam
+
+from models import Net
+
 
 mnist_transform = T.Compose([
     T.ToTensor()
@@ -26,3 +30,8 @@ def cycle(dl):
 
 dl = cycle(dl)
 # yields list of two tensors with batch of images at 0 and batch of labels at 1
+
+
+model = Net()
+optimizer = Adam(model.parameters(), lr=3e-4)
+test_accs, bytes_used = [], []

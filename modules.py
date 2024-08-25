@@ -9,6 +9,7 @@ from functools import reduce
 
 import torch
 import torch.nn.functional as F
+import torch.nn as nn
 from torch.nn import Module
 
 def cast_tuple(t, length = 1):
@@ -22,11 +23,12 @@ class QConv2d(Module):
     Quantized 2d convolution.
     """
     def __init__(self, in_channels, out_channels, kernel_size):
+        super().__init__()
         self.kernel_size = cast_tuple(kernel_size, length=2)
         scale = 1 / math.sqrt(in_channels * prod(self.kernel_size))
-        self.weight = torch.FloatTensor(out_channels, in_channels, *self.kernel_size).uniform_(-scale, scale)
-        self.e = torch.full((out_channels, 1, 1, 1), -8.)
-        self.b = torch.full((out_channels, 1, 1, 1), 2.) # 2 bits per weight
+        self.weight = nn.Parameter(torch.FloatTensor(out_channels, in_channels, *self.kernel_size).uniform_(-scale, scale))
+        self.e = nn.Parameter(torch.full((out_channels, 1, 1, 1), -8.))
+        self.b = nn.Parameter(torch.full((out_channels, 1, 1, 1), 2.)) # 2 bits per weight
 
     def qbits(self):
         return F.relu(self.b).sum() * prod(self.weight.shape[1:])
@@ -44,9 +46,10 @@ class QConv2d(Module):
             ),
             2**(F.relu(self.b)-1) - 1
         )
+        return out
 
     def forward(self, x):
         qw = self.qweight() # quantized weight is independent of input tensor
-        w = (qw.round() - qw).detach() + qw  # straight through estimator
+        w = (torch.round(qw) - qw).detach() + qw  # straight through estimator
         return F.conv2d(x, weight=2**self.e*w)
 
