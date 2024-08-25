@@ -86,6 +86,20 @@ for i in (t:=trange(20000)):
     bytes_used.append(model_bytes)
     t.set_description(f"loss: {loss.item():6.2f}  bytes: {model_bytes:.1f}  acc: {test_acc:5.2f}%")
 
+# save performance metrics to disk
+import pickle
+with open('test_accs.pickle', 'wb') as handle:
+    pickle.dump(test_accs, handle, protocol=pickle.HIGHEST_PROTOCOL)
+
+with open('bytes_used.pickle', 'wb') as handle:
+    pickle.dump(bytes_used, handle, protocol=pickle.HIGHEST_PROTOCOL)
+
+with open('test_accs.pickle', 'rb') as handle:
+    test_accs = pickle.load(handle)
+
+with open('bytes_used.pickle', 'rb') as handle:
+    bytes_used = pickle.load(handle)
+
 from matplotlib import pyplot as plt
 fig, ax1 = plt.subplots(figsize=(12,6))
 ax1.set_ylabel("Model Size (bytes)")
