@@ -22,8 +22,9 @@ class QConv2d(Module):
     """
     Quantized 2d convolution.
     """
-    def __init__(self, in_channels, out_channels, kernel_size):
+    def __init__(self, in_channels, out_channels, kernel_size, device="cuda"):
         super().__init__()
+        self.device = device
         self.kernel_size = cast_tuple(kernel_size, length=2)
         scale = 1 / math.sqrt(in_channels * prod(self.kernel_size))
         self.weight = nn.Parameter(torch.FloatTensor(out_channels, in_channels, *self.kernel_size).uniform_(-scale, scale))
@@ -49,7 +50,7 @@ class QConv2d(Module):
         return out
 
     def forward(self, x):
-        qw = self.qweight() # quantized weight is independent of input tensor
+        qw = self.qweight().to(self.device) # quantized weight is independent of input tensor
         w = (torch.round(qw) - qw).detach() + qw  # straight through estimator
         return F.conv2d(x, weight=2**self.e*w)
 

@@ -29,6 +29,7 @@ class Net(nn.Module):
 
         self.final_conv = QConv2d(576, 10, 1)
 
+    
 
     def forward(self, x): 
         out = F.relu(self.conv1(x))
@@ -42,7 +43,7 @@ class Net(nn.Module):
         out = self.maxpool2(out)
 
         out = torch.flatten(out, 1).reshape(-1, 576, 1, 1) # 576 in channels, 10 out channels
-        out = final_conv(out)
+        out = self.final_conv(out)
         
         out = torch.flatten(out, 1)
         return out
