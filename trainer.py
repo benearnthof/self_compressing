@@ -85,3 +85,16 @@ for i in (t:=trange(20000)):
     test_accs.append(test_acc)
     bytes_used.append(model_bytes)
     t.set_description(f"loss: {loss.item():6.2f}  bytes: {model_bytes:.1f}  acc: {test_acc:5.2f}%")
+
+from matplotlib import pyplot as plt
+fig, ax1 = plt.subplots(figsize=(12,6))
+ax1.set_ylabel("Model Size (bytes)")
+ax1.yaxis.label.set_color("red")
+ax1.plot(bytes_used, color="red")
+ax2 = ax1.twinx()
+ax2.plot(test_accs, color="blue")
+plt.ylim(80, 100)
+ax2.set_ylabel("Test Accuracy (%)")
+ax2.yaxis.label.set_color("blue")
+
+fig.savefig("mnist.png")
